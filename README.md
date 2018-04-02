@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/geggleto/PHP-View.svg?branch=master)](https://travis-ci.org/geggleto/PHP-View)
+[![Build Status](https://travis-ci.org/ncou/Chiron-PhpRenderer.svg?branch=master)](https://travis-ci.org/ncou/Chiron-PhpRenderer)
 
 [![Build Status](https://secure.travis-ci.org/zendframework/zend-view.svg?branch=master)](https://secure.travis-ci.org/zendframework/zend-view)
 [![Coverage Status](https://coveralls.io/repos/zendframework/zend-view/badge.svg?branch=master)](https://coveralls.io/r/zendframework/zend-view?branch=master)
