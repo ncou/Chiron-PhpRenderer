@@ -2,7 +2,7 @@
 
 ## PHP Renderer
 
-This is a renderer for rendering PHP view scripts into a PSR-7 Response object. It works well with Slim Framework 3.
+This is a renderer for rendering PHP view scripts into a PSR-7 Response object. It works well with Chiron Framework.
 
 
 ### Cross-site scripting (XSS) risks
@@ -18,22 +18,23 @@ You may use `$this` inside your php templates. `$this` will be the actual PhpRen
 
 Install with [Composer](http://getcomposer.org):
 
-    composer require slim/php-view
+    composer require chiron/php-renderer
 
 
-## Usage with Slim 3
+## Usage with Chiron
 
 ```php
-use Slim\Views\PhpRenderer;
+use Chiron\Views\PhpRenderer;
 
 include "vendor/autoload.php";
 
-$app = new Slim\App();
+$app = new Chiron\App();
 $container = $app->getContainer();
 $container['renderer'] = new PhpRenderer("./templates");
 
-$app->get('/hello/{name}', function ($request, $response, $args) {
-    return $this->renderer->render($response, "/hello.php", $args);
+$app->get('/hello/{name}', function ($request, $response, $args) use ($container) {
+    $text = $container->get('renderer')->render("/hello.php", $args);
+    return $response->write($text);
 });
 
 $app->run();
@@ -45,7 +46,8 @@ $app->run();
 $phpView = new PhpRenderer("./path/to/templates");
 
 //Render a Template
-$response = $phpView->render(new Response(), "/path/to/template.php", $yourData);
+$text = $phpView->render("/path/to/template.php", $yourData);
+$response = $response->write($text);
 ```
 
 ## Template Variables
@@ -75,7 +77,7 @@ $phpView = new PhpRenderer("./path/to/templates", $templateVariables);
 
 //...
 
-$phpView->render($response, $template, [
+$phpView->render($template, [
     "title" => "My Title"
 ]);
 // In the view above, the $title will be "My Title" and not "Title"
@@ -83,5 +85,3 @@ $phpView->render($response, $template, [
 
 ## Exceptions
 `\RuntimeException` - if template does not exist
-
-`\InvalidArgumentException` - if $data contains 'template'
