@@ -5,7 +5,6 @@ php:
 
 before_script: composer install
 
-script: phpunit --coverage-text --configuration phpunit.xml.dist
-
-after_success:
-    - CI=true TRAVIS=true coveralls --verbose
+script:
+  - phpunit --coverage-text --configuration phpunit.xml.dist
+  - phpunit --coverage-clover clover.xml
