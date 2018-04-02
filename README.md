@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/ncou/Chiron-PhpRenderer.svg?branch=master)](https://travis-ci.org/ncou/Chiron-PhpRenderer)
 [![Coverage Status](https://coveralls.io/repos/github/ncou/Chiron-PhpRenderer/badge.svg?branch=master)](https://coveralls.io/github/ncou/Chiron-PhpRenderer?branch=master)
+[![CodeCov](https://codecov.io/gh/ncou/Chiron-PhpRenderer/branch/master/graph/badge.svg)](https://codecov.io/gh/ncou/Chiron-PhpRenderer)
 
 ## PHP Renderer
 
