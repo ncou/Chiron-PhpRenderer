@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/geggleto/PHP-View.svg?branch=master)](https://travis-ci.org/geggleto/PHP-View)
 
+[![Build Status](https://secure.travis-ci.org/zendframework/zend-view.svg?branch=master)](https://secure.travis-ci.org/zendframework/zend-view)
+[![Coverage Status](https://coveralls.io/repos/zendframework/zend-view/badge.svg?branch=master)](https://coveralls.io/r/zendframework/zend-view?branch=master)
+
 ## PHP Renderer
 
 This is a renderer for rendering PHP view scripts into a PSR-7 Response object. It works well with Chiron Framework.
