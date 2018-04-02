@@ -8,3 +8,9 @@ before_script: composer install
 script:
   - phpunit --coverage-text --configuration phpunit.xml.dist
   - phpunit --coverage-clover clover.xml
+
+after_success:
+# Submit coverage report to Coveralls servers, see .coveralls.yml
+ - travis_retry php coveralls.phar -v
+# Submit coverage report to codecov.io
+ - bash <(curl -s https://codecov.io/bash)
