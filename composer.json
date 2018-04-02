@@ -4,9 +4,6 @@
   "description": "Render PHP view scripts into a PSR-7 Response object.",
   "keywords": ["chiron","framework","view","template","php","phtml","renderer"],
   "license": "MIT",
-  "require": {
-    "psr/http-message": "^1.0"
-  },
     "autoload": {
         "psr-4": {
             "Chiron\\Views\\": "src"
