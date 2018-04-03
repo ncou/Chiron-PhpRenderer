@@ -57,7 +57,7 @@ class PhpRendererTest extends TestCase
     {
         $renderer = new \Chiron\Views\PhpRenderer("tests/");
 
-        $renderer->render("testException.php");
+        $renderer->render("testException.php", []);
     }
 
     /**
