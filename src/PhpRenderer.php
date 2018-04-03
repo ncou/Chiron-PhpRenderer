@@ -2,6 +2,8 @@
 
 namespace Chiron\Views;
 
+use Throwable;
+
 class PhpRenderer implements \ArrayAccess
 {
     /** @var string */
