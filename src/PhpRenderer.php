@@ -13,7 +13,7 @@ class PhpRenderer implements \ArrayAccess
     /** @var array */
     private $attributes = [];
 
-    public function __construct($templatePath = '')
+    public function __construct(string $templatePath = '')
     {
         $this->setTemplatePath($templatePath);
     }
@@ -23,7 +23,7 @@ class PhpRenderer implements \ArrayAccess
      *
      * @return string
      */
-    public function getTemplatePath()
+    public function getTemplatePath() : string
     {
         return $this->templatePath;
     }
@@ -33,7 +33,7 @@ class PhpRenderer implements \ArrayAccess
      *
      * @param string $templatePath
      */
-    public function setTemplatePath($templatePath)
+    public function setTemplatePath(string $templatePath)
     {
         $this->templatePath = rtrim($templatePath, '/\\') . '/';
         return $this;
