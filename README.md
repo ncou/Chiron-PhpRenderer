@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/ncou/Chiron-PhpRenderer.svg?branch=master)](https://travis-ci.org/ncou/Chiron-PhpRenderer)
 [![Coverage Status](https://coveralls.io/repos/github/ncou/Chiron-PhpRenderer/badge.svg?branch=master)](https://coveralls.io/github/ncou/Chiron-PhpRenderer?branch=master)
 [![CodeCov](https://codecov.io/gh/ncou/Chiron-PhpRenderer/branch/master/graph/badge.svg)](https://codecov.io/gh/ncou/Chiron-PhpRenderer)
+[![Total Downloads](https://img.shields.io/packagist/dt/chiron/php-renderer.svg?style=flat-square)](https://packagist.org/packages/chiron/php-renderer/stats)
+[![Monthly Downloads](https://img.shields.io/packagist/dm/chiron/php-renderer.svg?style=flat-square)](https://packagist.org/packages/chiron/php-renderer/stats)
 
 ## PHP Renderer
 
