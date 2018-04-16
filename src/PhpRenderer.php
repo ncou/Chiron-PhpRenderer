@@ -98,7 +98,7 @@ class PhpRenderer implements \ArrayAccess
         // an exception is thrown. This prevents any partial views from leaking.
         try {
             ob_start();
-            $includeReturn = include $this->file;
+            $includeReturn = @include $this->file;
             $content = ob_get_clean();
         } catch (Throwable $e) {
             ob_end_clean();
