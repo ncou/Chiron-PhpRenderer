@@ -8,6 +8,7 @@ class PhpRenderer implements \ArrayAccess
 {
     /** @var string */
     private $templatePath;
+
     /** @var array */
     private $attributes = [];
 
@@ -17,29 +18,31 @@ class PhpRenderer implements \ArrayAccess
     }
 
     /**
-     * Get the template path
+     * Get the template path.
      *
      * @return string
      */
-    public function getTemplatePath() : string
+    public function getTemplatePath(): string
     {
         return $this->templatePath;
     }
 
     /**
-     * Set the template path
+     * Set the template path.
      *
      * @param string $templatePath
      */
     public function setTemplatePath(string $templatePath)
     {
         $this->templatePath = rtrim($templatePath, '/\\') . '/';
+
         return $this;
     }
 
     public function setAttributes(array $attributes = [])
     {
         $this->attributes = $attributes;
+
         return $this;
     }
 
@@ -52,6 +55,7 @@ class PhpRenderer implements \ArrayAccess
     public function addAttribute(string $key, $value): self
     {
         $this->attributes[$key] = $value;
+
         return $this;
     }
 
@@ -63,6 +67,7 @@ class PhpRenderer implements \ArrayAccess
     public function removeAttribute(string $key): self
     {
         unset($this->attributes[$key]);
+
         return $this;
     }
 
@@ -75,15 +80,15 @@ class PhpRenderer implements \ArrayAccess
      * Render template
      *******************************************************************************/
 
-    public function render(string $templateFile, array $variables = [], string $templatePath = null) : string
+    public function render(string $templateFile, array $variables = [], string $templatePath = null): string
     {
-        if (!isset($templatePath)) {
+        if (! isset($templatePath)) {
             $templatePath = $this->templatePath;
         }
 
         $template = $templatePath . $templateFile;
 
-        if (!is_file($template)) {
+        if (! is_file($template)) {
             throw new \RuntimeException("Unable to render template : `$template` because this file does not exist");
         }
 
@@ -101,6 +106,7 @@ class PhpRenderer implements \ArrayAccess
             $content = ob_get_clean();
         } catch (Throwable $e) {
             ob_end_clean();
+
             throw $e;
         }
 
@@ -114,8 +120,7 @@ class PhpRenderer implements \ArrayAccess
     /**
      * Escape HTML entities in a string.
      *
-     * @param  string $raw
-     * @return void (echo the result)
+     * @param string $raw
      */
     private function e(string $raw): void
     {
@@ -126,20 +131,19 @@ class PhpRenderer implements \ArrayAccess
     }
 
     /**
-    *   Remove HTML tags (except those enumerated) and non-printable
-    *   characters to mitigate XSS/code injection attacks
-    *   @return void (echo the result)
-    *   @param $val string
-    *   @param $tags string - tags allowed, separated by a commma, semi-colon or pipe character. EX : "b|i" or "<b>;<i>" or "b,<i>". use "*" to keep all the html tags
-    **/
+     *   Remove HTML tags (except those enumerated) and non-printable
+     *   characters to mitigate XSS/code injection attacks.
+     *
+     *   @param $val string
+     *   @param $tags string - tags allowed, separated by a commma, semi-colon or pipe character. EX : "b|i" or "<b>;<i>" or "b,<i>". use "*" to keep all the html tags
+     **/
     private function scrub(string $val, string $tags = null): void
     {
-
         // if tags = *, we don't remove the html tags in the string
-        if ($tags!='*') {
+        if ($tags != '*') {
             //Split comma-, semi-colon, or pipe-separated string tags
             $tags = array_map('trim', preg_split('/[,;|]/', $tags, 0, PREG_SPLIT_NO_EMPTY));
-            $val=trim(strip_tags($val, '<'.implode('><', $tags).'>'));
+            $val = trim(strip_tags($val, '<' . implode('><', $tags) . '>'));
         }
 
         // remove non displayable chars -> remove control characters (ASCII characters 0 to 31) except for tabs and newlines
@@ -153,7 +157,7 @@ class PhpRenderer implements \ArrayAccess
     /**
      * Does this collection have a given key?
      *
-     * @param  string $key The data key
+     * @param string $key The data key
      *
      * @return bool
      */
@@ -161,8 +165,9 @@ class PhpRenderer implements \ArrayAccess
     {
         return $this->hasAttribute($key);
     }
+
     /**
-     * Get collection item for key
+     * Get collection item for key.
      *
      * @param string $key The data key
      *
@@ -172,8 +177,9 @@ class PhpRenderer implements \ArrayAccess
     {
         return $this->getAttribute($key);
     }
+
     /**
-     * Set collection item
+     * Set collection item.
      *
      * @param string $key   The data key
      * @param mixed  $value The data value
@@ -182,8 +188,9 @@ class PhpRenderer implements \ArrayAccess
     {
         $this->addAttribute($key, $value);
     }
+
     /**
-     * Remove item from collection
+     * Remove item from collection.
      *
      * @param string $key The data key
      */
@@ -199,7 +206,8 @@ class PhpRenderer implements \ArrayAccess
     /**
      * Get a piece of data from the view.
      *
-     * @param  string  $key
+     * @param string $key
+     *
      * @return mixed
      */
     public function __get($key)
@@ -210,28 +218,31 @@ class PhpRenderer implements \ArrayAccess
     /**
      * Set a piece of data on the view.
      *
-     * @param  string  $key
-     * @param  mixed   $value
-     * @return void
+     * @param string $key
+     * @param mixed  $value
      */
     public function __set($key, $value)
     {
         $this->addAttribute($key, $value);
     }
+
     /**
      * Check if a piece of data is bound to the view.
      *
-     * @param  string  $key
+     * @param string $key
+     *
      * @return bool
      */
     public function __isset($key)
     {
         return $this->hasAttribute($key);
     }
+
     /**
      * Remove a piece of bound data from the view.
      *
-     * @param  string  $key
+     * @param string $key
+     *
      * @return bool
      */
     public function __unset($key)
