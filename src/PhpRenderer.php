@@ -8,8 +8,6 @@ class PhpRenderer implements \ArrayAccess
 {
     /** @var string */
     private $templatePath;
-    /** @var string */
-    private $file;
     /** @var array */
     private $attributes = [];
 
@@ -50,24 +48,25 @@ class PhpRenderer implements \ArrayAccess
         return $this->attributes;
     }
 
-    public function addAttribute($key, $value): self
+    // mixed $value
+    public function addAttribute(string $key, $value): self
     {
         $this->attributes[$key] = $value;
         return $this;
     }
 
-    public function getAttribute($key)
+    public function getAttribute(string $key)
     {
         return $this->attributes[$key];
     }
 
-    public function removeAttribute($key): self
+    public function removeAttribute(string $key): self
     {
         unset($this->attributes[$key]);
         return $this;
     }
 
-    public function hasAttribute($key): bool
+    public function hasAttribute(string $key): bool
     {
         return array_key_exists($key, $this->attributes);
     }
@@ -76,41 +75,33 @@ class PhpRenderer implements \ArrayAccess
      * Render template
      *******************************************************************************/
 
-    public function render(string $templateFile, array $__vars = [], string $templatePath = null) : string
+    public function render(string $templateFile, array $variables = [], string $templatePath = null) : string
     {
         if (!isset($templatePath)) {
             $templatePath = $this->templatePath;
         }
-        // assigns to a class variable and not a local variable, to prevent naming collisions
-        $this->file = $templatePath . $templateFile;
-        // assigns to a double-underscored variable, to prevent naming collisions
-        $__vars = array_merge($this->attributes, $__vars);
-        
-        // extract all assigned vars, but not 'this'.
-        if (array_key_exists('this', $__vars)) {
-            unset($__vars['this']);
+
+        $template = $templatePath . $templateFile;
+
+        if (!is_file($template)) {
+            throw new \RuntimeException("Unable to render template : `$template` because this file does not exist");
         }
-        extract($__vars, EXTR_OVERWRITE); // EXTR_SKIP
-        unset($__vars); // remove $__vars from local scope
-        
+
+        $variables = array_merge($this->attributes, $variables);
+
         // We'll evaluate the contents of the view inside a try/catch block so we can
         // flush out any stray output that might get out before an error occurs or
         // an exception is thrown. This prevents any partial views from leaking.
         try {
             ob_start();
-            $includeReturn = @include $this->file;
+            call_user_func(function () {
+                extract(func_get_arg(1), EXTR_OVERWRITE); // EXTR_SKIP
+                require func_get_arg(0);
+            }, $template, $variables);
             $content = ob_get_clean();
         } catch (Throwable $e) {
             ob_end_clean();
             throw $e;
-        }
-
-        if ($includeReturn === false || empty($content)) {
-            throw new \RuntimeException(sprintf(
-                '%s: Unable to render template "%s"; file include failed',
-                __METHOD__,
-                $this->file
-            ));
         }
 
         return $content;
@@ -123,13 +114,15 @@ class PhpRenderer implements \ArrayAccess
     /**
      * Escape HTML entities in a string.
      *
-     * @param  string $value
+     * @param  string $raw
      * @return void (echo the result)
      */
-    private function e(string $value)
+    private function e(string $raw): void
     {
+        // change horizontal tab with 4 spaces
+        $raw = str_replace(chr(9), '    ', $raw);
         // We take advantage of ENT_SUBSTITUTE flag to correctly deal with invalid UTF-8 sequences.
-        echo is_string($value) ? htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : $value;
+        echo htmlspecialchars($raw, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
     /**
@@ -139,7 +132,7 @@ class PhpRenderer implements \ArrayAccess
     *   @param $val string
     *   @param $tags string - tags allowed, separated by a commma, semi-colon or pipe character. EX : "b|i" or "<b>;<i>" or "b,<i>". use "*" to keep all the html tags
     **/
-    private function scrub(string $val, string $tags = null)
+    private function scrub(string $val, string $tags = null): void
     {
 
         // if tags = *, we don't remove the html tags in the string
@@ -213,7 +206,7 @@ class PhpRenderer implements \ArrayAccess
     {
         return $this->getAttribute($key);
     }
-    
+
     /**
      * Set a piece of data on the view.
      *
