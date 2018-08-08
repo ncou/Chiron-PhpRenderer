@@ -100,13 +100,12 @@ class PhpRenderer implements \ArrayAccess
         try {
             ob_start();
             call_user_func(function () {
-                extract(func_get_arg(1), EXTR_OVERWRITE); // EXTR_SKIP
-                include func_get_arg(0);
-            }, $template, $variables);
+                extract(func_get_arg(0), EXTR_OVERWRITE); // EXTR_SKIP
+                include func_get_arg(1);
+            }, $variables, $template);
             $content = ob_get_clean();
         } catch (Throwable $e) {
             ob_end_clean();
-
             throw $e;
         }
 
