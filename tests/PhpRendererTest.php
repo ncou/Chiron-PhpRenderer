@@ -40,7 +40,7 @@ class PhpRendererTest extends TestCase
 
         try {
             $response = $renderer->render('testException.php');
-        } catch (Throwable $t) { // PHP 7+
+        } catch (Throwable $t) {
             // Simulates an error template
             $response = $renderer->render('testTemplate.php', [
                 'hello' => 'Hi',

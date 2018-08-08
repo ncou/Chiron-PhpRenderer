@@ -51,7 +51,10 @@ class PhpRenderer implements \ArrayAccess
         return $this->attributes;
     }
 
-    // mixed $value
+    /**
+     * @param string $key
+     * @param mixed $value
+     */
     public function addAttribute(string $key, $value): self
     {
         $this->attributes[$key] = $value;
