@@ -106,6 +106,7 @@ class PhpRenderer implements \ArrayAccess
             $content = ob_get_clean();
         } catch (Throwable $e) {
             ob_end_clean();
+
             throw $e;
         }
 
