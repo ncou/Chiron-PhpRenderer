@@ -67,7 +67,7 @@ class PhpRenderer implements TemplateRendererInterface
         foreach ($paths as $path) {
             $templatePaths[] = new TemplatePath($path);
         }
-        foreach ($hints as $namespace => $path) {
+        foreach ($hints as $namespace => $paths) {
             foreach ($paths as $path) {
                 $templatePaths[] = new TemplatePath($path, $namespace);
             }
