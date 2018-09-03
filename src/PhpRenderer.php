@@ -1,255 +1,115 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Chiron\Views;
 
-use Throwable;
+use Chiron\Views\AttributesTrait;
+use Chiron\Views\TemplateRendererInterface;
+use Chiron\Views\TemplatePath;
 
-class PhpRenderer implements \ArrayAccess
+class PhpRenderer implements TemplateRendererInterface
 {
-    /** @var string */
-    private $templatePath;
+    use AttributesTrait;
 
-    /** @var array */
-    private $attributes = [];
+    private $engine;
+    private $finder;
 
-    public function __construct(string $templatePath = '')
+    public function __construct()
     {
-        $this->setTemplatePath($templatePath);
+        $this->engine = new PhpEngine();
+        $this->finder = new FileViewFinder();
     }
 
     /**
-     * Get the template path.
+     * Render a template, optionally with parameters.
      *
-     * @return string
-     */
-    public function getTemplatePath(): string
-    {
-        return $this->templatePath;
-    }
-
-    /**
-     * Set the template path.
+     * Implementations MUST support the `namespace::template` naming convention,
+     * and allow omitting the filename extension.
      *
-     * @param string $templatePath
+     * @param string $name
+     * @param array $params
      */
-    public function setTemplatePath(string $templatePath)
+    public function render(string $name, array $params = []) : string
     {
-        $this->templatePath = rtrim($templatePath, '/\\') . '/';
+        $path = $this->finder->find($name);
+        $params = array_merge($this->attributes, $params);
 
-        return $this;
+        return $this->engine->render($path, $params);
     }
-
-    public function setAttributes(array $attributes = [])
+    /**
+     * Add a template path to the engine.
+     *
+     * Adds a template path, with optional namespace the templates in that path
+     * provide.
+     */
+    public function addPath(string $path, string $namespace = null) : void
     {
-        $this->attributes = $attributes;
-
-        return $this;
-    }
-
-    public function getAttributes()
-    {
-        return $this->attributes;
+        if (! $namespace) {
+            $this->finder->addLocation($path);
+            return;
+        }
+        $this->finder->addNamespace($namespace, $path);
     }
 
     /**
-     * @param string $key
-     * @param mixed $value
+     * Get the template directories
+     *
+     * @return TemplatePath[]
      */
-    public function addAttribute(string $key, $value): self
+    public function getPaths() : array
     {
-        $this->attributes[$key] = $value;
+        $templatePaths = [];
 
-        return $this;
-    }
+        $paths = $this->finder->getPaths();
+        $hints = $this->finder->getHints();
 
-    public function getAttribute(string $key)
-    {
-        return $this->attributes[$key];
-    }
-
-    public function removeAttribute(string $key): self
-    {
-        unset($this->attributes[$key]);
-
-        return $this;
-    }
-
-    public function hasAttribute(string $key): bool
-    {
-        return array_key_exists($key, $this->attributes);
-    }
-
-    /********************************************************************************
-     * Render template
-     *******************************************************************************/
-
-    public function render(string $templateFile, array $variables = [], string $templatePath = null): string
-    {
-        if (! isset($templatePath)) {
-            $templatePath = $this->templatePath;
+        foreach ($paths as $path) {
+            $templatePaths[] = new TemplatePath($path);
+        }
+        foreach ($hints as $namespace => $path) {
+            $templatePaths[] = new TemplatePath($path[0], $namespace);
         }
 
-        $template = $templatePath . $templateFile;
-
-        if (! is_file($template)) {
-            throw new \RuntimeException("Unable to render template : `$template` because this file does not exist");
-        }
-
-        $variables = array_merge($this->attributes, $variables);
-
-        // We'll evaluate the contents of the view inside a try/catch block so we can
-        // flush out any stray output that might get out before an error occurs or
-        // an exception is thrown. This prevents any partial views from leaking.
-        try {
-            ob_start();
-            call_user_func(function () {
-                extract(func_get_arg(0), EXTR_OVERWRITE); // EXTR_SKIP
-                include func_get_arg(1);
-            }, $variables, $template);
-            $content = ob_get_clean();
-        } catch (Throwable $e) {
-            ob_end_clean();
-
-            throw $e;
-        }
-
-        return $content;
+        return $templatePaths;
     }
 
-    /********************************************************************************
-     * Security Helpers
-     *******************************************************************************/
 
     /**
-     * Escape HTML entities in a string.
+     * Checks if the view exists
      *
-     * @param string $raw
+     * @param   string  $path  Full path or part of a path
+     *
+     * @return  boolean  True if the path exists
      */
-    private function e(string $raw): void
+    public function exists(string $name): bool
     {
-        // change horizontal tab with 4 spaces
-        $raw = str_replace(chr(9), '    ', $raw);
-        // We take advantage of ENT_SUBSTITUTE flag to correctly deal with invalid UTF-8 sequences.
-        echo htmlspecialchars($raw, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        return $this->finder->exists($name);
     }
 
     /**
-     *   Remove HTML tags (except those enumerated) and non-printable
-     *   characters to mitigate XSS/code injection attacks.
-     *
-     *   @param string $raw
-     *   @param string $tags - tags allowed, separated by a commma, semi-colon or pipe character. EX : "b|i" or "<b>;<i>" or "b,<i>". use "*" to keep all the html tags
-     **/
-    private function scrub(string $raw, string $tags = null): void
-    {
-        // if tags = *, we don't remove the html tags in the string
-        if ($tags != '*') {
-            //Split comma-, semi-colon, or pipe-separated string tags
-            $tags = array_map('trim', preg_split('/[,;|]/', $tags, 0, PREG_SPLIT_NO_EMPTY));
-            $raw = trim(strip_tags($raw, '<' . implode('><', $tags) . '>'));
-        }
-
-        // remove non displayable chars -> remove control characters (ASCII characters 0 to 31) except for tabs and newlines
-        echo trim(preg_replace('/[\x00-\x08\x0B-\x0C\x0E-\x1F]/', '', $raw));
-    }
-
-    /********************************************************************************
-     * ArrayAccess interface
-     *******************************************************************************/
-
-    /**
-     * Does this collection have a given key?
-     *
-     * @param string $key The data key
-     *
-     * @return bool
+     * Wrapping method to redirect methods not available in this class to the
+     * internal instance of the Finder class used for the rendering engine.
+     * @param string $name Unknown method to call in the internal Twig rendering engine.
+     * @param array $arguments Method's arguments.
+     * @return mixed Result of the called method.
      */
-    public function offsetExists($key)
+    /*
+    public function __call($name, $arguments)
     {
-        return $this->hasAttribute($key);
-    }
+        call_user_func_array(array($this->finder, $name), $arguments);
+    }*/
 
     /**
-     * Get collection item for key.
-     *
-     * @param string $key The data key
-     *
-     * @return mixed The key's value, or the default value
+     * Wrapping method to redirect static methods not available in this class
+     * to the internal instance of the Twig rendering engine.
+     * @param string $name Unknown static method to call in the internal Twig rendering engine.
+     * @param array $arguments Method's arguments.
+     * @return mixed Result of the called static method.
      */
-    public function offsetGet($key)
+    /*
+    public static function __callStatic($name, $arguments)
     {
-        return $this->getAttribute($key);
-    }
-
-    /**
-     * Set collection item.
-     *
-     * @param string $key   The data key
-     * @param mixed  $value The data value
-     */
-    public function offsetSet($key, $value)
-    {
-        $this->addAttribute($key, $value);
-    }
-
-    /**
-     * Remove item from collection.
-     *
-     * @param string $key The data key
-     */
-    public function offsetUnset($key)
-    {
-        $this->removeAttribute($key);
-    }
-
-    /********************************************************************************
-     * Magic methods
-     *******************************************************************************/
-
-    /**
-     * Get a piece of data from the view.
-     *
-     * @param string $key
-     *
-     * @return mixed
-     */
-    public function __get($key)
-    {
-        return $this->getAttribute($key);
-    }
-
-    /**
-     * Set a piece of data on the view.
-     *
-     * @param string $key
-     * @param mixed  $value
-     */
-    public function __set($key, $value)
-    {
-        $this->addAttribute($key, $value);
-    }
-
-    /**
-     * Check if a piece of data is bound to the view.
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function __isset($key)
-    {
-        return $this->hasAttribute($key);
-    }
-
-    /**
-     * Remove a piece of bound data from the view.
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function __unset($key)
-    {
-        $this->removeAttribute($key);
-    }
+        call_user_func_array(array('\\Twig_Environment', $name), $arguments);
+    }*/
 }

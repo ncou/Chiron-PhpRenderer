@@ -2,47 +2,73 @@
 
 use PHPUnit\Framework\TestCase;
 
+use Chiron\Views\PhpRenderer;
+use Chiron\Views\TemplatePath;
+
 class PhpRendererTest extends TestCase
 {
-    public function testRenderer()
+    public function assertTemplatePath($path, TemplatePath $templatePath, $message = null)
     {
-        $renderer = new \Chiron\Views\PhpRenderer('tests/');
-
-        $response = $renderer->render('testTemplate.php', ['hello' => 'Hi']);
-
-        $this->assertEquals('Hi', $response);
+        $message = $message ?: sprintf('Failed to assert TemplatePath contained path %s', $path);
+        $this->assertEquals($path, $templatePath->getPath(), $message);
+    }
+    public function assertTemplatePathString($path, TemplatePath $templatePath, $message = null)
+    {
+        $message = $message ?: sprintf('Failed to assert TemplatePath casts to string path %s', $path);
+        $this->assertEquals($path, (string) $templatePath, $message);
+    }
+    public function assertTemplatePathNamespace($namespace, TemplatePath $templatePath, $message = null)
+    {
+        $message = $message
+            ?: sprintf('Failed to assert TemplatePath namespace matched %s', var_export($namespace, true));
+        $this->assertEquals($namespace, $templatePath->getNamespace(), $message);
+    }
+    public function assertEmptyTemplatePathNamespace(TemplatePath $templatePath, $message = null)
+    {
+        $message = $message ?: 'Failed to assert TemplatePath namespace was empty';
+        $this->assertEmpty($templatePath->getNamespace(), $message);
     }
 
-    public function testRenderConstructor()
+    public function testCanAddPathWithEmptyNamespace()
     {
-        $renderer = new \Chiron\Views\PhpRenderer('tests');
-
-        $response = $renderer->render('testTemplate.php', ['hello' => 'Hi']);
-
-        $this->assertEquals('Hi', $response);
+        $renderer = new PhpRenderer();
+        $renderer->addPath(__DIR__ . '/TestAsset');
+        $paths = $renderer->getPaths();
+        $this->assertInternalType('array', $paths);
+        $this->assertCount(1, $paths);
+        $this->assertTemplatePath(__DIR__ . '/TestAsset', $paths[0]);
+        $this->assertTemplatePathString(__DIR__ . '/TestAsset', $paths[0]);
+        $this->assertEmptyTemplatePathNamespace($paths[0]);
     }
-
-    public function testAttributeMerging()
+    public function testCanAddPathWithNamespace()
     {
-        $renderer = new \Chiron\Views\PhpRenderer('tests/', [
-            'hello' => 'Hello',
-        ]);
-
-        $response = $renderer->render('testTemplate.php', [
-            'hello' => 'Hi',
-        ]);
-        $this->assertEquals('Hi', $response);
+        $renderer = new PhpRenderer();
+        $renderer->addPath(__DIR__ . '/TestAsset', 'test');
+        $paths = $renderer->getPaths();
+        $this->assertInternalType('array', $paths);
+        $this->assertCount(1, $paths);
+        $this->assertTemplatePath(__DIR__ . '/TestAsset', $paths[0]);
+        $this->assertTemplatePathString(__DIR__ . '/TestAsset', $paths[0]);
+        $this->assertTemplatePathNamespace('test', $paths[0]);
+    }
+    public function testDelegatesRenderingToUnderlyingImplementation()
+    {
+        $renderer = new PhpRenderer();
+        $renderer->addPath(__DIR__ . '/TestAsset');
+        $result = $renderer->render('testTemplate', [ 'hello' => 'Hi' ]);
+        $this->assertEquals('Hi', $result);
     }
 
     public function testExceptionInTemplateWithCatch()
     {
-        $renderer = new \Chiron\Views\PhpRenderer('tests/');
+        $renderer = new \Chiron\Views\PhpRenderer();
+        $renderer->addPath(__DIR__ . '/TestAsset');
 
         try {
-            $response = $renderer->render('testException.php');
+            $response = $renderer->render('testException');
         } catch (Throwable $t) {
             // Simulates an error template
-            $response = $renderer->render('testTemplate.php', [
+            $response = $renderer->render('testTemplate', [
                 'hello' => 'Hi',
             ]);
         }
@@ -55,18 +81,21 @@ class PhpRendererTest extends TestCase
      */
     public function testExceptionInTemplate()
     {
-        $renderer = new \Chiron\Views\PhpRenderer('tests/');
+        $renderer = new \Chiron\Views\PhpRenderer();
+        $renderer->addPath(__DIR__ . '/TestAsset');
 
-        $renderer->render('testException.php', []);
+        $renderer->render('testException');
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage View [nonExistingTemplate] not found.
      */
     public function testTemplateNotFound()
     {
-        $renderer = new \Chiron\Views\PhpRenderer('tests/');
+        $renderer = new \Chiron\Views\PhpRenderer();
+        $renderer->addPath(__DIR__ . '/TestAsset');
 
-        $renderer->render('adfadftestTemplate.php', []);
+        $renderer->render('nonExistingTemplate', []);
     }
 }

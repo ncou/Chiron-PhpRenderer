@@ -5,7 +5,8 @@
   "keywords": ["chiron","framework","view","template","php","phtml","renderer"],
   "license": "MIT",
   "require": {
-        "php": ">=7.1.3"
+        "php": ">=7.1.3",
+        "chiron/template": "^1.1"
   },
   "autoload": {
       "psr-4": {
