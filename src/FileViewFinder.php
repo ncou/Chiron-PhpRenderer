@@ -6,30 +6,20 @@ namespace Chiron\Views;
 
 class FileViewFinder
 {
+    /** Identifier of the default namespace. */
+    public const DEFAULT_NAMESPACE = '__DEFAULT__';
+
+    protected $paths = array();
+
+    protected $cache = array();
+
     /**
-     * Hint path delimiter value.
+     * Namespace path delimiter value.
      *
      * @var string
      */
-    const HINT_PATH_DELIMITER = '::';
-    /**
-     * The array of active view paths.
-     *
-     * @var array
-     */
-    protected $paths;
-    /**
-     * The array of views that have been located.
-     *
-     * @var array
-     */
-    protected $views = [];
-    /**
-     * The namespace to file path hints.
-     *
-     * @var array
-     */
-    protected $hints = [];
+    public const NAMESPACE_DELIMITER = '::';
+
     /**
      * Register a view extension with the finder.
      *
@@ -46,8 +36,10 @@ class FileViewFinder
      */
     public function __construct(array $paths = [], array $extensions = null)
     {
-        $this->paths = $paths;
-        if (isset($extensions)) {
+        if ($paths) {
+            $this->setPaths($paths);
+        }
+        if ($extensions) {
             $this->extensions = $extensions;
         }
     }
@@ -60,8 +52,12 @@ class FileViewFinder
      */
     public function exists(string $name): bool
     {
+        if (isset($this->cache[$name])) {
+            return true;
+        }
+
         try {
-            $this->find($name);
+            $this->findTemplate($name);
         } catch (\InvalidArgumentException $e) {
             return false;
         }
@@ -74,26 +70,39 @@ class FileViewFinder
      * @param  string  $name
      * @return string
      */
-    public function find(string $name): string
+    public function findTemplate(string $name): string
     {
-        if (isset($this->views[$name])) {
-            return $this->views[$name];
+        if (isset($this->cache[$name])) {
+            return $this->cache[$name];
         }
-        if ($this->hasHintInformation($name = trim($name))) {
-            return $this->views[$name] = $this->findNamespacedView($name);
+        
+        list($namespace, $shortname) = $this->parseName($name);
+        
+        foreach ($this->paths[$namespace] as $path) {
+            foreach ($this->getPossibleViewFiles($shortname) as $file) {
+                if (is_file($viewPath = $path.'/'.$file)) {
+                    if (false !== $realpath = realpath($viewPath)) {
+                        return $this->cache[$name] = $realpath;
+                    }
+                    return $this->cache[$name] = $viewPath;
+                }
+            }
         }
-        return $this->views[$name] = $this->findInPaths($name, $this->paths);
+        throw new \InvalidArgumentException("Template [{$name}] not found.");
     }
     /**
      * Get the path to a template with a named path.
      *
      * @param  string  $name
-     * @return string
+     * @return array
      */
-    protected function findNamespacedView(string $name): string
+    protected function parseName(string $name, string $default = self::DEFAULT_NAMESPACE): array
     {
-        list($namespace, $view) = $this->parseNamespaceSegments($name);
-        return $this->findInPaths($view, $this->hints[$namespace]);
+        if ($this->hasHintInformation($name)) {
+            return $this->parseNamespaceSegments($name);
+        }
+
+        return array($default, $name);
     }
     /**
      * Get the segments of a template with a named path.
@@ -105,34 +114,14 @@ class FileViewFinder
      */
     protected function parseNamespaceSegments(string $name): array
     {
-        $segments = explode(static::HINT_PATH_DELIMITER, $name);
+        $segments = explode(static::NAMESPACE_DELIMITER, $name);
         if (count($segments) !== 2) {
-            throw new \InvalidArgumentException("View [{$name}] has an invalid name.");
+            throw new \InvalidArgumentException("Template [{$name}] has an invalid name.");
         }
-        if (! isset($this->hints[$segments[0]])) {
-            throw new \InvalidArgumentException("No hint path defined for [{$segments[0]}].");
+        if (! isset($this->paths[$segments[0]])) {
+            throw new \InvalidArgumentException("No namespace defined for [{$segments[0]}].");
         }
         return $segments;
-    }
-    /**
-     * Find the given view in the list of paths.
-     *
-     * @param  string  $name
-     * @param  array   $paths
-     * @return string
-     *
-     * @throws \InvalidArgumentException
-     */
-    protected function findInPaths(string $name, array $paths): string
-    {
-        foreach ((array) $paths as $path) {
-            foreach ($this->getPossibleViewFiles($name) as $file) {
-                if (file_exists($viewPath = $path.'/'.$file)) {
-                    return $viewPath;
-                }
-            }
-        }
-        throw new \InvalidArgumentException("View [{$name}] not found.");
     }
     /**
      * Get an array of possible view files.
@@ -146,67 +135,63 @@ class FileViewFinder
             return str_replace('.', '/', $name).'.'.$extension;
         }, $this->extensions);
     }
+
+
     /**
-     * Add a location to the finder.
+     * Returns the paths to the templates.
      *
-     * @param  string  $location
-     * @return void
+     * @param string $namespace A path namespace
+     *
+     * @return array The array of paths where to look for templates
      */
-    public function addLocation(string $location): void
+    public function getPaths($namespace = self::DEFAULT_NAMESPACE)
     {
-        $this->paths[] = $location;
+        return isset($this->paths[$namespace]) ? $this->paths[$namespace] : array();
     }
     /**
-     * Prepend a location to the finder.
+     * Returns the path namespaces.
      *
-     * @param  string  $location
-     * @return void
+     * The main namespace is always defined.
+     *
+     * @return array The array of defined namespaces
      */
-    public function prependLocation(string $location): void
+    public function getNamespaces()
     {
-        array_unshift($this->paths, $location);
+        return array_keys($this->paths);
     }
     /**
-     * Add a namespace hint to the finder.
+     * Sets the paths where templates are stored.
      *
-     * @param  string  $namespace
-     * @param  string|array  $hints
-     * @return void
+     * @param string|array $paths     A path or an array of paths where to look for templates
+     * @param string       $namespace A path namespace
      */
-    public function addNamespace(string $namespace, $hints): void
+    public function setPaths($paths, $namespace = self::DEFAULT_NAMESPACE)
     {
-        $hints = (array) $hints;
-        if (isset($this->hints[$namespace])) {
-            $hints = array_merge($this->hints[$namespace], $hints);
+        if (!is_array($paths)) {
+            $paths = array($paths);
         }
-        $this->hints[$namespace] = $hints;
-    }
-    /**
-     * Prepend a namespace hint to the finder.
-     *
-     * @param  string  $namespace
-     * @param  string|array  $hints
-     * @return void
-     */
-    public function prependNamespace(string $namespace, $hints): void
-    {
-        $hints = (array) $hints;
-        if (isset($this->hints[$namespace])) {
-            $hints = array_merge($hints, $this->hints[$namespace]);
+        $this->paths[$namespace] = array();
+        foreach ($paths as $path) {
+            $this->addPath($path, $namespace);
         }
-        $this->hints[$namespace] = $hints;
     }
+
     /**
-     * Replace the namespace hints for the given namespace.
+     * Adds a path where templates are stored.
      *
-     * @param  string  $namespace
-     * @param  string|array  $hints
-     * @return void
+     * @param string $path      A path where to look for templates
+     * @param string $namespace A path namespace
+     *
+     * @throws Twig_Error_Loader
      */
-    public function replaceNamespace(string $namespace, $hints): void
+    public function addPath(string $path, string $namespace = self::DEFAULT_NAMESPACE)
     {
-        $this->hints[$namespace] = (array) $hints;
+        // invalidate the cache
+        $this->cache = array();
+
+        $this->paths[$namespace][] = rtrim($path, '/\\');
     }
+
     /**
      * Register an extension with the view finder.
      *
@@ -221,43 +206,6 @@ class FileViewFinder
         array_unshift($this->extensions, $extension);
     }
     /**
-     * Returns whether or not the view name has any hint information.
-     *
-     * @param  string  $name
-     * @return bool
-     */
-    public function hasHintInformation(string $name): bool
-    {
-        return strpos($name, static::HINT_PATH_DELIMITER) > 0;
-    }
-    /**
-     * Flush the cache of located views.
-     *
-     * @return void
-     */
-    public function flush(): void
-    {
-        $this->views = [];
-    }
-    /**
-     * Get the active view paths.
-     *
-     * @return array
-     */
-    public function getPaths(): array
-    {
-        return $this->paths;
-    }
-    /**
-     * Get the namespace to file path hints.
-     *
-     * @return array
-     */
-    public function getHints(): array
-    {
-        return $this->hints;
-    }
-    /**
      * Get registered extensions.
      *
      * @return array
@@ -266,4 +214,15 @@ class FileViewFinder
     {
         return $this->extensions;
     }
+    /**
+     * Returns whether or not the view name has any hint information.
+     *
+     * @param  string  $name
+     * @return bool
+     */
+    public function hasHintInformation(string $name): bool
+    {
+        return strpos($name, static::NAMESPACE_DELIMITER) > 0;
+    }
+
 }

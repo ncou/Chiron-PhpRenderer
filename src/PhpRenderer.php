@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Chiron\Views;
 
 use Chiron\Views\AttributesTrait;
+use Chiron\Views\FileViewFinder;
 use Chiron\Views\TemplateRendererInterface;
 use Chiron\Views\TemplatePath;
 
@@ -32,7 +33,7 @@ class PhpRenderer implements TemplateRendererInterface
      */
     public function render(string $name, array $params = []) : string
     {
-        $path = $this->finder->find($name);
+        $path = $this->finder->findTemplate($name);
         $params = array_merge($this->attributes, $params);
 
         return $this->engine->render($path, $params);
@@ -45,11 +46,8 @@ class PhpRenderer implements TemplateRendererInterface
      */
     public function addPath(string $path, string $namespace = null) : void
     {
-        if (! $namespace) {
-            $this->finder->addLocation($path);
-            return;
-        }
-        $this->finder->addNamespace($namespace, $path);
+        $namespace = $namespace ?: FileViewFinder::DEFAULT_NAMESPACE;
+        $this->finder->addPath($path, $namespace);
     }
 
     /**
@@ -57,6 +55,24 @@ class PhpRenderer implements TemplateRendererInterface
      *
      * @return TemplatePath[]
      */
+    public function getPaths() : array
+    {
+        $paths = [];
+        foreach ($this->finder->getNamespaces() as $namespace) {
+            $name = ($namespace !== FileViewFinder::DEFAULT_NAMESPACE) ? $namespace : null;
+            foreach ($this->finder->getPaths($namespace) as $path) {
+                $paths[] = new TemplatePath($path, $name);
+            }
+        }
+        return $paths;
+    }
+
+    /**
+     * Get the template directories
+     *
+     * @return TemplatePath[]
+     */
+    /*
     public function getPaths() : array
     {
         $templatePaths = [];
@@ -74,7 +90,7 @@ class PhpRenderer implements TemplateRendererInterface
         }
 
         return $templatePaths;
-    }
+    }*/
 
 
     /**

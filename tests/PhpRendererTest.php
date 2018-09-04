@@ -89,7 +89,7 @@ class PhpRendererTest extends TestCase
 
     /**
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage View [nonExistingTemplate] not found.
+     * @expectedExceptionMessage Template [nonExistingTemplate] not found.
      */
     public function testTemplateNotFound()
     {
