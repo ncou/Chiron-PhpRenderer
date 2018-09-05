@@ -61,7 +61,7 @@ class PhpRendererTest extends TestCase
 
     public function testExceptionInTemplateWithCatch()
     {
-        $renderer = new \Chiron\Views\PhpRenderer();
+        $renderer = new PhpRenderer();
         $renderer->addPath(__DIR__ . '/TestAsset');
 
         try {
@@ -81,7 +81,7 @@ class PhpRendererTest extends TestCase
      */
     public function testExceptionInTemplate()
     {
-        $renderer = new \Chiron\Views\PhpRenderer();
+        $renderer = new PhpRenderer();
         $renderer->addPath(__DIR__ . '/TestAsset');
 
         $renderer->render('testException');
@@ -93,7 +93,7 @@ class PhpRendererTest extends TestCase
      */
     public function testTemplateNotFound()
     {
-        $renderer = new \Chiron\Views\PhpRenderer();
+        $renderer = new PhpRenderer();
         $renderer->addPath(__DIR__ . '/TestAsset');
 
         $renderer->render('nonExistingTemplate', []);
