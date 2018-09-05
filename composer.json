@@ -20,6 +20,6 @@
   "scripts": {
         "phpunit": "phpunit --colors=always",
         "test-coverage": "phpunit --coverage-clover clover.xml",
-        "phpstan": "phpstan analyse src --level=4",
+        "phpstan": "phpstan analyse src --level=4"
     }
 }
