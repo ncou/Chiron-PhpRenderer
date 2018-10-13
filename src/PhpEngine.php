@@ -26,8 +26,10 @@ class PhpEngine
             $content = ob_get_clean();
         } catch (\Throwable $e) {
             ob_end_clean();
+
             throw $e;
         }
+
         return $content;
     }
 }

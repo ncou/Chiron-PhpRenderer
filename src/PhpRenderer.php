@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Chiron\Views;
 
-use Chiron\Views\AttributesTrait;
-use Chiron\Views\FileViewFinder;
-use Chiron\Views\TemplateRendererInterface;
-use Chiron\Views\TemplatePath;
-
 class PhpRenderer implements TemplateRendererInterface
 {
     use AttributesTrait;
 
     private $engine;
+
     private $finder;
 
     public function __construct()
@@ -29,33 +25,34 @@ class PhpRenderer implements TemplateRendererInterface
      * and allow omitting the filename extension.
      *
      * @param string $name
-     * @param array $params
+     * @param array  $params
      */
-    public function render(string $name, array $params = []) : string
+    public function render(string $name, array $params = []): string
     {
         $path = $this->finder->findTemplate($name);
         $params = array_merge($this->attributes, $params);
 
         return $this->engine->render($path, $params);
     }
+
     /**
      * Add a template path to the engine.
      *
      * Adds a template path, with optional namespace the templates in that path
      * provide.
      */
-    public function addPath(string $path, string $namespace = null) : void
+    public function addPath(string $path, string $namespace = null): void
     {
         $namespace = $namespace ?: FileViewFinder::DEFAULT_NAMESPACE;
         $this->finder->addPath($path, $namespace);
     }
 
     /**
-     * Get the template directories
+     * Get the template directories.
      *
      * @return TemplatePath[]
      */
-    public function getPaths() : array
+    public function getPaths(): array
     {
         $paths = [];
         foreach ($this->finder->getNamespaces() as $namespace) {
@@ -64,11 +61,12 @@ class PhpRenderer implements TemplateRendererInterface
                 $paths[] = new TemplatePath($path, $name);
             }
         }
+
         return $paths;
     }
 
     /**
-     * Get the template directories
+     * Get the template directories.
      *
      * @return TemplatePath[]
      */
@@ -92,20 +90,19 @@ class PhpRenderer implements TemplateRendererInterface
         return $templatePaths;
     }*/
 
-
     /**
      * Checks if the view exists.
      *
-     * @param   string  $name  View name
+     * @param string $name View name
      *
-     * @return  bool  True if the path exists
+     * @return bool True if the path exists
      */
     public function exists(string $name): bool
     {
         return $this->finder->exists($name);
     }
 
-    /**
+    /*
      * Wrapping method to redirect methods not available in this class to the
      * internal instance of the Finder class used for the rendering engine.
      * @param string $name Unknown method to call in the internal Twig rendering engine.
@@ -118,7 +115,7 @@ class PhpRenderer implements TemplateRendererInterface
         call_user_func_array(array($this->finder, $name), $arguments);
     }*/
 
-    /**
+    /*
      * Wrapping method to redirect static methods not available in this class
      * to the internal instance of the Twig rendering engine.
      * @param string $name Unknown static method to call in the internal Twig rendering engine.
