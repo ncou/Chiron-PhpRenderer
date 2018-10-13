@@ -25,10 +25,12 @@ class PhpRendererServiceProvider
     public function register(ContainerInterface $container)
     {
         // config
-        $container['templates'] = [
-            'extension' => 'html',
-            'paths'     => [],
-        ];
+        if (! $container->has('templates')) {
+            $container['templates'] = [
+                'extension' => 'html',
+                'paths'     => [],
+            ];
+        }
         // factory
         $container[PhpRenderer::class] = function ($c) {
             $config = $c->get('templates');
