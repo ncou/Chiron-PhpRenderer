@@ -12,10 +12,16 @@ class PhpRenderer implements TemplateRendererInterface
 
     private $finder;
 
-    public function __construct()
+    /**
+     * Create a new file view loader instance.
+     *
+     * @param array $paths
+     * @param array $extensions
+     */
+    public function __construct(array $paths = [], array $extensions = null)
     {
         $this->engine = new PhpEngine();
-        $this->finder = new FileViewFinder();
+        $this->finder = new FileViewFinder($paths, $extensions);
     }
 
     /**
