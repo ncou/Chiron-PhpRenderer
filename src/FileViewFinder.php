@@ -80,6 +80,10 @@ class FileViewFinder
 
         list($namespace, $shortname) = $this->parseName($name);
 
+        if (!isset($this->paths[$namespace])) {
+            throw new \InvalidArgumentException("There are no registered paths for namespace [{$namespace}].");
+        }
+
         foreach ($this->paths[$namespace] as $path) {
             foreach ($this->getPossibleViewFiles($shortname) as $file) {
                 if (is_file($viewPath = $path . '/' . $file)) {
@@ -92,7 +96,7 @@ class FileViewFinder
             }
         }
 
-        throw new \InvalidArgumentException("Template [{$name}] not found.");
+        throw new \InvalidArgumentException("Template [{$name}] not found."); //sprintf('Unable to find template "%s" (looked into: %s).', $name, implode(', ', $this->paths[$namespace]))
     }
 
     /**
