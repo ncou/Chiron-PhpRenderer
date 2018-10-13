@@ -13,6 +13,8 @@ class FileViewFinder
 
     protected $cache = [];
 
+    protected $errorCache = [];
+
     /**
      * Namespace path delimiter value.
      *
@@ -77,11 +79,15 @@ class FileViewFinder
         if (isset($this->cache[$name])) {
             return $this->cache[$name];
         }
+        if (isset($this->errorCache[$name])) {
+            throw new \InvalidArgumentException($this->errorCache[$name]);
+        }
 
         list($namespace, $shortname) = $this->parseName($name);
 
         if (!isset($this->paths[$namespace])) {
-            throw new \InvalidArgumentException("There are no registered paths for namespace [{$namespace}].");
+            $this->errorCache[$name] = sprintf('There are no registered paths for namespace "%s".', $namespace);
+            throw new \InvalidArgumentException($this->errorCache[$name]);
         }
 
         foreach ($this->paths[$namespace] as $path) {
@@ -96,7 +102,8 @@ class FileViewFinder
             }
         }
 
-        throw new \InvalidArgumentException("Template [{$name}] not found."); //sprintf('Unable to find template "%s" (looked into: %s).', $name, implode(', ', $this->paths[$namespace]))
+        $this->errorCache[$name] = sprintf('Unable to find template "%s" (looked into: %s).', $name, implode(', ', $this->paths[$namespace]));
+        throw new \InvalidArgumentException($this->errorCache[$name]);
     }
 
     /**
@@ -203,7 +210,7 @@ class FileViewFinder
     public function addPath(string $path, string $namespace = self::DEFAULT_NAMESPACE)
     {
         // invalidate the cache
-        $this->cache = [];
+        $this->cache = $this->errorCache = [];
 
         $this->paths[$namespace][] = rtrim($path, '/\\');
     }
