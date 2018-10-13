@@ -85,8 +85,9 @@ class FileViewFinder
 
         list($namespace, $shortname) = $this->parseName($name);
 
-        if (!isset($this->paths[$namespace])) {
+        if (! isset($this->paths[$namespace])) {
             $this->errorCache[$name] = sprintf('There are no registered paths for namespace "%s".', $namespace);
+
             throw new \InvalidArgumentException($this->errorCache[$name]);
         }
 
@@ -103,6 +104,7 @@ class FileViewFinder
         }
 
         $this->errorCache[$name] = sprintf('Unable to find template "%s" (looked into: %s).', $name, implode(', ', $this->paths[$namespace]));
+
         throw new \InvalidArgumentException($this->errorCache[$name]);
     }
 

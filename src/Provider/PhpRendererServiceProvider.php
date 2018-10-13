@@ -5,12 +5,11 @@ namespace Chiron\Views\Provider;
 use Chiron\Views\PhpRenderer;
 use Chiron\Views\TemplateRendererInterface;
 use Psr\Container\ContainerInterface;
-use Chiron\Views\FileViewFinder;
 
 class PhpRendererServiceProvider
 {
     /**
-     * You should have in your container the config informations using the following structure :
+     * You should have in your container the config informations using the following structure :.
      *
      * 'templates' => [
      *     'extension' => 'file extension used by templates; defaults to html',
@@ -21,7 +20,7 @@ class PhpRendererServiceProvider
      *         // strings or arrays of string paths to associate with the namespace.
      *     ],
      * ],
-    */
+     */
     public function register(ContainerInterface $container)
     {
         // config
