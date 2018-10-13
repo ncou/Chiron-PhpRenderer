@@ -29,7 +29,6 @@ class FileViewFinder
     /**
      * Create a new file view loader instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
      * @param  array  $paths
      * @param  array  $extensions
      * @return void
@@ -47,7 +46,7 @@ class FileViewFinder
     /**
      * Determine if a given view exists.
      *
-     * @param  string  $view
+     * @param  string  $name
      * @return bool
      */
     public function exists(string $name): bool
@@ -75,9 +74,9 @@ class FileViewFinder
         if (isset($this->cache[$name])) {
             return $this->cache[$name];
         }
-        
+
         list($namespace, $shortname) = $this->parseName($name);
-        
+
         foreach ($this->paths[$namespace] as $path) {
             foreach ($this->getPossibleViewFiles($shortname) as $file) {
                 if (is_file($viewPath = $path.'/'.$file)) {

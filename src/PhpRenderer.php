@@ -94,11 +94,11 @@ class PhpRenderer implements TemplateRendererInterface
 
 
     /**
-     * Checks if the view exists
+     * Checks if the view exists.
      *
-     * @param   string  $path  Full path or part of a path
+     * @param   string  $name  View name
      *
-     * @return  boolean  True if the path exists
+     * @return  bool  True if the path exists
      */
     public function exists(string $name): bool
     {
