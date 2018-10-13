@@ -93,7 +93,6 @@ class PhpRendererTest extends TestCase
 
     /**
      * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Template [nonExistingTemplate] not found.
      */
     public function testTemplateNotFound()
     {
@@ -101,5 +100,15 @@ class PhpRendererTest extends TestCase
         $renderer->addPath(__DIR__ . '/TestAsset');
 
         $renderer->render('nonExistingTemplate', []);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testPathNotRegistered()
+    {
+        $renderer = new PhpRenderer();
+
+        $renderer->render('checkTemplateButFailBecauseNoPathsAreRegistered', []);
     }
 }
