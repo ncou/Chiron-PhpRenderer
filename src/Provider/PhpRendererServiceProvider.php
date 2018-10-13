@@ -2,9 +2,9 @@
 
 namespace Chiron\Views\Provider;
 
-use Psr\Container\ContainerInterface;
-use Chiron\Views\TemplateRendererInterface;
 use Chiron\Views\PhpRenderer;
+use Chiron\Views\TemplateRendererInterface;
+use Psr\Container\ContainerInterface;
 
 class PhpRendererServiceProvider
 {

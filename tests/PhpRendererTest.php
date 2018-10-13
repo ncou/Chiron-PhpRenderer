@@ -1,9 +1,8 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-
 use Chiron\Views\PhpRenderer;
 use Chiron\Views\TemplatePath;
+use PHPUnit\Framework\TestCase;
 
 class PhpRendererTest extends TestCase
 {
@@ -12,17 +11,20 @@ class PhpRendererTest extends TestCase
         $message = $message ?: sprintf('Failed to assert TemplatePath contained path %s', $path);
         $this->assertEquals($path, $templatePath->getPath(), $message);
     }
+
     public function assertTemplatePathString($path, TemplatePath $templatePath, $message = null)
     {
         $message = $message ?: sprintf('Failed to assert TemplatePath casts to string path %s', $path);
         $this->assertEquals($path, (string) $templatePath, $message);
     }
+
     public function assertTemplatePathNamespace($namespace, TemplatePath $templatePath, $message = null)
     {
         $message = $message
             ?: sprintf('Failed to assert TemplatePath namespace matched %s', var_export($namespace, true));
         $this->assertEquals($namespace, $templatePath->getNamespace(), $message);
     }
+
     public function assertEmptyTemplatePathNamespace(TemplatePath $templatePath, $message = null)
     {
         $message = $message ?: 'Failed to assert TemplatePath namespace was empty';
@@ -40,6 +42,7 @@ class PhpRendererTest extends TestCase
         $this->assertTemplatePathString(__DIR__ . '/TestAsset', $paths[0]);
         $this->assertEmptyTemplatePathNamespace($paths[0]);
     }
+
     public function testCanAddPathWithNamespace()
     {
         $renderer = new PhpRenderer();
@@ -51,11 +54,12 @@ class PhpRendererTest extends TestCase
         $this->assertTemplatePathString(__DIR__ . '/TestAsset', $paths[0]);
         $this->assertTemplatePathNamespace('test', $paths[0]);
     }
+
     public function testDelegatesRenderingToUnderlyingImplementation()
     {
         $renderer = new PhpRenderer();
         $renderer->addPath(__DIR__ . '/TestAsset');
-        $result = $renderer->render('testTemplate', [ 'hello' => 'Hi' ]);
+        $result = $renderer->render('testTemplate', ['hello' => 'Hi']);
         $this->assertEquals('Hi', $result);
     }
 
