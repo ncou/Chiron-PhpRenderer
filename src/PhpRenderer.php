@@ -7,7 +7,7 @@ namespace Chiron\Views;
 class PhpRenderer implements TemplateRendererInterface
 {
     use AttributesTrait;
-    use use ExtensionTrait;
+    use ExtensionTrait;
 
     private $engine;
 
