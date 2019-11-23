@@ -19,6 +19,7 @@ class PhpRenderer implements TemplateRendererInterface
      * @param array $paths
      * @param array $extensions
      */
+    // TODO : ne passer qu'une seule extension en paramétre ----> Ne pas utiliser un tableau. Il faudra aussi retirer la méthode getPossibleViewFiles() de la classe FileViewFinder !!!!
     public function __construct(array $paths = [], array $extensions = null)
     {
         $this->engine = new PhpEngine();
