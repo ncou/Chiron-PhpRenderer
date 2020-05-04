@@ -7,6 +7,7 @@ namespace Chiron\Views;
 use Chiron\Container\Container;
 use Chiron\Boot\DirectoriesInterface;
 
+// TODO : classe à virer elle ne sert plus à rien
 class PhpRendererFactory
 {
     /**
@@ -22,13 +23,14 @@ class PhpRendererFactory
      *     ],
      * ],
      */
-    public function __invoke(Container $container)
+    public function __invoke(Container $container): TemplateRendererInterface
     {
         // directories
         $dirs = $container->get(DirectoriesInterface::class);
-        $config = $container->get(\Chiron\Config\ConfigManager::class);
 
         // config
+        $config = $container->get(\Chiron\Config\ConfigManager::class);
+
         if (! $config->has('templates')) {
             $config->merge(['templates' => [
                 'extension' => 'phtml',
@@ -38,12 +40,12 @@ class PhpRendererFactory
 
         $templates = $config->get('templates');
 
-        //die(var_dump($templates));
-
+        // instanciate class
         $renderer = new PhpRenderer([], (array) $templates['extension']);
 
-        // Add template paths
-        $allPaths = isset($templates['paths']) && is_array($templates['paths']) ? $templates['paths'] : [];
+        // add template paths
+        //$allPaths = isset($templates['paths']) && is_array($templates['paths']) ? $templates['paths'] : [];
+        $allPaths = isset($templates['paths']) ? (array) $templates['paths'] : [];
         foreach ($allPaths as $namespace => $paths) {
             $namespace = is_numeric($namespace) ? null : $namespace;
             foreach ((array) $paths as $path) {

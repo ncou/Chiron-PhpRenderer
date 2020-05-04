@@ -103,6 +103,7 @@ class FileViewFinder
             }
         }
 
+        // TODO : ajouter aussi les extensions recherchées !!!!
         $this->errorCache[$name] = sprintf('Unable to find template "%s" (looked into: %s).', $name, implode(', ', $this->paths[$namespace]));
 
         throw new \InvalidArgumentException($this->errorCache[$name]);
