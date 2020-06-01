@@ -13,7 +13,7 @@ class PhpRendererServiceProvider implements ServiceProviderInterface
 {
     public function register(BindingInterface $container): void
     {
-        $container->share(TemplateRendererInterface::class, PhpRenderer::class);
+        $container->singleton(TemplateRendererInterface::class, PhpRenderer::class);
 
 
 
