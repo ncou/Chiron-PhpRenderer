@@ -9,6 +9,8 @@ class PhpRenderer implements TemplateRendererInterface
     use AttributesTrait;
     use ExtensionTrait;
 
+    private $extension = 'phtml';
+
     private $engine;
 
     private $finder;
