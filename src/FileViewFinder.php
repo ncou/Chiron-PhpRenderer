@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Chiron\Views;
 
+// TODO : passer la classe en final et virer les protected pour mettre des private
 class FileViewFinder
 {
     /** Identifier of the default namespace. */
