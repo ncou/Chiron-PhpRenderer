@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Chiron\Views;
 
+//https://github.com/yiisoft/yii-twig/blob/master/src/ViewRenderer.php
+
 class PhpRenderer implements TemplateRendererInterface
 {
     use AttributesTrait;
@@ -22,7 +24,7 @@ class PhpRenderer implements TemplateRendererInterface
      * @param array $extensions
      */
     // TODO : ne passer qu'une seule extension en paramétre ----> Ne pas utiliser un tableau. Il faudra aussi retirer la méthode getPossibleViewFiles() de la classe FileViewFinder !!!!
-    public function __construct(array $paths = [], array $extensions = null)
+    public function __construct(array $paths = [], ?array $extensions = null)
     {
         $this->engine = new PhpEngine();
         $this->finder = new FileViewFinder($paths, $extensions);
@@ -51,7 +53,7 @@ class PhpRenderer implements TemplateRendererInterface
      * Adds a template path, with optional namespace the templates in that path
      * provide.
      */
-    public function addPath(string $path, string $namespace = null): void
+    public function addPath(string $path, ?string $namespace = null): void
     {
         $namespace = $namespace ?: FileViewFinder::DEFAULT_NAMESPACE;
         $this->finder->addPath($path, $namespace);

@@ -9,17 +9,10 @@ use Chiron\Container\Container;
 use Chiron\Bootload\ServiceProvider\ServiceProviderInterface;
 use Chiron\Container\BindingInterface;
 
-class PhpRendererServiceProvider implements ServiceProviderInterface
+final class PhpRendererServiceProvider implements ServiceProviderInterface
 {
     public function register(BindingInterface $container): void
     {
         $container->singleton(TemplateRendererInterface::class, PhpRenderer::class);
-
-
-
-        // factory
-        //$container->add(PhpRenderer::class, new PhpRendererFactory());
-        // alias
-        //$container->alias(TemplateRendererInterface::class, PhpRenderer::class);
     }
 }
